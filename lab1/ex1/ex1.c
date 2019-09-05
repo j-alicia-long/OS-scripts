@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h> // stdlib includes malloc() and free()
-#include <string.h>
+
 
 // define instructions
 #define PREVIOUS -1
@@ -91,11 +91,17 @@ void insertNodeNext(int position, int value, node* originNode)
 	node* newNode = (node*)malloc(sizeof(node)); //do we need casting?
 	newNode->data = value;
 
-	// Find prevNode
+	// Find target node position
 	node* prevNode = originNode;
 	while(position != 0) {
-		prevNode = prevNode->nextNode;
-		position--;
+		if(position < 0) {
+			prevNode = prevNode->previousNode;
+                        position++;
+		}
+		else {
+			prevNode = prevNode->nextNode;
+			position--;
+		}
 	}
 	// Insert new node
 	newNode->nextNode = prevNode->nextNode;
@@ -117,8 +123,8 @@ void deleteNode (int position, node* originNode)
 	}
 
 	node->previousNode->nextNode = node->nextNode;
-  node->nextNode->previousNode = node->previousNode;
-  free(node);
+  	node->nextNode->previousNode = node->previousNode;
+  	free(node);
 }
 
 /*
@@ -127,14 +133,16 @@ void deleteNode (int position, node* originNode)
 */
 void deleteList(node* originNode)
 {
+	// Create temp pointers for deallocation
 	node *cur = originNode->nextNode;
-  node *temp = malloc(sizeof(cur));
-  while (cur != originNode) {
-      temp = cur->nextNode;
-      free(cur);
-      cur = temp;
-  }
-  originNode->nextNode = originNode;
+  	node *next = NULL; // = malloc(sizeof(cur));
+ 	while (cur != originNode) {
+      		next = cur->nextNode;
+      		free(cur);
+      		cur = next;
+  	}
+	// Reset root node pointers
+  	originNode->nextNode = originNode;
 	originNode->previousNode = originNode;
 }
 

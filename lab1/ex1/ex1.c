@@ -40,7 +40,7 @@ int main()
 	// input and processing has been done for you.
 
 	while(scanf("%i%i",&instruction,&position) == 2)
-		//scanf() returns an int that corresponds to the number of values scanned.
+	//scanf() returns an int that corresponds to the number of values scanned.
 	{
 		if(instruction == DELETE)
 		{
@@ -73,8 +73,8 @@ int main()
 //Function Implementations
 
 /*
-	Inserts a node (with data value) BEFORE the node at position in list originNode
-	Allocate memory for new node with malloc()
+Inserts a node (with data value) BEFORE the node at position in list originNode
+Allocates memory for new node with malloc()
 */
 void insertNodePrevious(int position, int value, node* originNode)
 {
@@ -82,13 +82,13 @@ void insertNodePrevious(int position, int value, node* originNode)
 }
 
 /*
-	Inserts a node (with data value) AFTER the node at position in list originNode
-	Allocate memory for new node with malloc()
+Inserts a node (with data value) AFTER the node at position in list originNode
+Allocates memory for new node with malloc()
 */
 void insertNodeNext(int position, int value, node* originNode)
 {
 	// Allocate memory
-	node* newNode = (node*)malloc(sizeof(node)); //do we need casting?
+	node* newNode = (node*)malloc(sizeof(node));
 	newNode->data = value;
 
 	// Find target node position
@@ -96,7 +96,7 @@ void insertNodeNext(int position, int value, node* originNode)
 	while(position != 0) {
 		if(position < 0) {
 			prevNode = prevNode->previousNode;
-                        position++;
+			position++;
 		}
 		else {
 			prevNode = prevNode->nextNode;
@@ -111,8 +111,8 @@ void insertNodeNext(int position, int value, node* originNode)
 }
 
 /*
-	Removes a node at position in list originNode
-	Deallocate memory using free()
+Removes a node at position in list originNode
+Deallocate memory using free()
 */
 void deleteNode (int position, node* originNode)
 {
@@ -123,26 +123,26 @@ void deleteNode (int position, node* originNode)
 	}
 
 	node->previousNode->nextNode = node->nextNode;
-  	node->nextNode->previousNode = node->previousNode;
-  	free(node);
+	node->nextNode->previousNode = node->previousNode;
+	free(node);
 }
 
 /*
-	Deletes all nodes in list originNode excluding originNode
-	Deallocate memory using free()
+Deletes all nodes in list originNode excluding originNode
+Deallocate memory using free()
 */
 void deleteList(node* originNode)
 {
 	// Create temp pointers for deallocation
 	node *cur = originNode->nextNode;
-  	node *next = NULL; // = malloc(sizeof(cur));
- 	while (cur != originNode) {
-      		next = cur->nextNode;
-      		free(cur);
-      		cur = next;
-  	}
+	node *next = NULL; // = malloc(sizeof(cur));
+	while (cur != originNode) {
+		next = cur->nextNode;
+		free(cur);
+		cur = next;
+	}
 	// Reset root node pointers
-  	originNode->nextNode = originNode;
+	originNode->nextNode = originNode;
 	originNode->previousNode = originNode;
 }
 

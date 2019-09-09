@@ -47,14 +47,20 @@ void deleteList(node*);
 void printSubNodes(node*);
 void printList(node*);
 
+// Function pointer wrappers prototypes
+void wrap_deleteNode(int position, node* originNode);
+void wrap_insertSubNode(int position, node* originNode);
+void wrap_insertNodeNext(int position, node* originNode);
+void wrap_insertNodePrevious(int position, node* originNode);
+void wrap_collapseSubNodes(int position, node* originNode);
 
 // Start of main
 int main()
 {
-	int position;
 	int instruction;
-	int subPosition;
-	int value;
+	int position;
+	// int subPosition;
+	// int value;
 
 	// Declaration of the origin Node
 	node* originNode = (node*)malloc(sizeof(node));
@@ -63,51 +69,18 @@ int main()
 	originNode->data = 0;
 	originNode->subNodeHead = NULL;
 
-
-	typedef void (*instr2)(int,node*);
-	typedef void (*instr3)(int,int,node*);
-	typedef void (*instr4)(int,int,int,node*);
-
-	void (*fptr11)(int,int,node*) = &insertNodePrevious;
-	void (*fptr0)(int,node*) = &deleteNode;
-	void (*fptr1)(int,int,node*) = &insertNodeNext;
-	void (*fptr2)(int,int,int,node*) = &insertSubNode;
-	void (*fptr3)(int,node*) = &collapseSubNodes;
-
-	typedef void (*fptr)(void);
-	fptr func_table[5] = { (fptr)fptr11, (fptr)fptr0, (fptr)fptr1, (fptr)fptr2, (fptr)fptr3 };
+	// Define function pointers
+	typedef void (*fptr)(int,node*);
+	fptr prev = &wrap_insertNodePrevious;
+	fptr delete = &wrap_deleteNode;
+	fptr next = &wrap_insertNodeNext;
+	fptr subnode = &wrap_insertSubNode;
+	fptr collapse = &wrap_collapseSubNodes;
+	fptr func_table[5] = { prev, delete, next, subnode, collapse };
 
 	while(scanf("%i%i",&instruction,&position) == 2)
-		//scanf() returns an int that corresponds to the number of values scanned.
 	{
-		if(instruction == DELETE) // 0
-		{
-			(*((instr2)func_table[1]))(position,originNode);
-			// deleteNode(position,originNode);
-		}
-		else if(instruction == INSERTSUBNODE) // 2
-		{
-			scanf("%i%i",&subPosition,&value);
-			(*((instr4)func_table[3]))(position,subPosition,value,originNode);
-			// insertSubNode(position,subPosition,value,originNode);
-		}
-		else if(instruction == NEXT) // 1
-		{
-			scanf("%i",&value);
-			(*((instr3)func_table[2]))(position,value,originNode);
-			// insertNodeNext(position,value,originNode);
-		}
-		else if(instruction == PREVIOUS) // -1
-		{
-			scanf("%i",&value);
-			(*((instr3)func_table[0]))(position,value,originNode);
-			// insertNodePrevious(position,value,originNode);
-		}
-		else if(instruction == COLLAPSE) // 3
-		{
-			(*((instr2)func_table[4]))(position,originNode);
-			// collapseSubNodes(position,originNode);
-		}
+			(*func_table[instruction+1])(position, originNode);
 	}
 	printList(originNode);
 	deleteList(originNode);
@@ -120,6 +93,28 @@ int main()
 	return 0;
 }
 
+// Function wrapper implementations
+void wrap_deleteNode(int position, node* originNode){
+	deleteNode(position, originNode);
+}
+void wrap_insertSubNode(int position, node* originNode){
+	int subPosition, value;
+	scanf("%i%i",&subPosition,&value);
+	insertSubNode(position,subPosition,value,originNode);
+}
+void wrap_insertNodeNext(int position, node* originNode){
+	int value;
+	scanf("%i",&value);
+	insertNodeNext(position,value,originNode);
+}
+void wrap_insertNodePrevious(int position, node* originNode){
+	int value;
+	scanf("%i",&value);
+	insertNodePrevious(position,value,originNode);
+}
+void wrap_collapseSubNodes(int position, node* originNode){
+	collapseSubNodes(position, originNode);
+}
 
 // Function Implementations
 

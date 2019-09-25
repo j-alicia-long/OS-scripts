@@ -1,5 +1,5 @@
 /*************************************
-  * Lab 2 Exercise 2
+  * Lab 2 Exercise 3
   * Name: Jennifer Long
   * Student No: E0446263
   * Lab Group:
@@ -30,8 +30,12 @@ int main() {
   int maxTokenNum = 10;
   int maxTokenSize = 19;
   int readTokenNum = 0;
+  char *job, *str, *tofree; // Pointers for each job
   char* command = "";     // A string cmd entered by the user
   char** tokens; // A list of args in each command
+
+  int fd[2];
+  pipe(fd);
 
   printf( "Welcome to Genie!");
   displayCmdMenu();
@@ -41,29 +45,52 @@ int main() {
     printf ("\nGENIE > ");
     fgets (line, sizeof(line), stdin);      // read in a line
 
-    tokens = readTokens(maxTokenNum, maxTokenSize, &readTokenNum, line);
-    if (readTokenNum == 0){
-      printf( "You must enter a valid command! ");
-      break;
-    }
-    command = tokens[0];
-    // printf( "Command: %s\n", command );
+    tofree = str = strdup(line);  // We own str's memory now.
+    while ((job = strsep(&str, "|")))
+    { //command chain
+      printf( "Job: %s\n", job );
+      tokens = readTokens(maxTokenNum, maxTokenSize, &readTokenNum, job);
+      if (readTokenNum == 0){
+        printf( "You must enter a valid command! ");
+        break;
+      }
+      command = tokens[0];
+      printf( "Command: %s\n", command );
 
-    if (strcmp(command, "quit") == 0) {
-      printf( "Goodbye!\n");
-      return 0; // exit program
-    }
+      if (strcmp(command, "quit") == 0) {
+        printf( "Goodbye!\n");
+        return 0; // exit program
+      }
 
-    // If not quit, check other commands
-    char cmdPath[28];
-    if (!commandExists(command, &cmdPath)) { // check if filepath exists
-      printf( "%s not found\n", command);
-    }
-    else {
-      execCommand(cmdPath, tokens);
-    }
+      // If not quit, check other commands
+      char cmdPath[28];
+      if (!commandExists(command, &cmdPath)) { // check if filepath exists
+        printf( "%s not found\n", command);
+      }
+      else {
+        execCommand(cmdPath, tokens);
+        // if (fork()) { /* parent code */
+        //     close(fd[1]);
+        //     dup2(fd[0], 0);
+        //     execv(cmdPath, tokens);
+        //     if (fd[0] != 0) close(fd[0]);
+        //
+        // } else { /* child code */
+        //     close(fd[0]);
+        //     dup2(fd[1], 1);
+        //     if (fd[1] != 0) close(fd[1]);
+        //     exit(0)
+        // }
+      }
 
-    freeTokenArray(tokens, readTokenNum);
+      freeTokenArray(tokens, readTokenNum);
+    }
+    free(tofree);
+    //
+    // // printf( "Given command: %s\n", command);
+    // // while ( *tokens ) printf( "%s ", *tokens++ );
+    //
+
 
   }
   return 0;
@@ -73,6 +100,7 @@ void displayCmdMenu(){
   printf ("\n\nSample commands:\n");
   printf (" quit\n");
   printf (" /bin/ls -l\n");
+  printf (" ls -l | wc -w\n");
   printf ("FORMAT: [command] x x\n");
 }
 
@@ -119,14 +147,17 @@ bool commandExists(char* command, char *cmdPath[]){
 }
 
 void execCommand(char* cmdPath, char** tokens){
-  // printf( "Executing command %s\n", cmdPath);
+  printf( "Executing command %s\n", cmdPath);
   int parentPID = getpid();
   fork();
   if (getpid() != parentPID){
+    // printf( "Child [%d] forked\n", getpid());
+    // execv(const char *path, char *const argv[]);
     execv(cmdPath, tokens);
     exit(1);
   }
   else{
+    // printf( "Child [%d] done\n", wait(NULL));
     wait(NULL);
   }
 }

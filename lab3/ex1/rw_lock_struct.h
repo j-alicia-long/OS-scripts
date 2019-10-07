@@ -1,6 +1,6 @@
 /*************************************
  * Lab 3 Exercise 1
- * Name: 
+ * Name:
  * Student No:
  * Lab Group:
  *************************************/
@@ -10,7 +10,7 @@
 
 typedef struct {
   pthread_mutex_t mutex;
+  pthread_mutex_t roomEmpty;
   int reader_count;
-  int writer_count;
+  // int writer_count;
 } rw_lock;
-

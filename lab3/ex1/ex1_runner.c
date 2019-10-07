@@ -1,11 +1,15 @@
 /*************************************
  * Lab 3 Exercise 1
  *************************************
-You may change this file during your own testing, 
-but note that they will be replaced with the original 
+You may change this file during your own testing,
+but note that they will be replaced with the original
 files when we test your assignments.
  *************************************/
 
+/* Solution notes
+ - Keep pthread library for thread creation
+ - Use binary semaphore instead of pthread mutex
+*/
 
 #include <pthread.h>
 #include <stdio.h>
@@ -72,7 +76,7 @@ int main(int argc, char** argv)
             printf("Error while creating thread. Return code: %d\n", return_code);
             exit(1);
         }
-        
+
     }
 
     for (i = 0; i < READERS; i++) {
@@ -91,7 +95,7 @@ int main(int argc, char** argv)
             printf("Error while creating thread. Return code: %d\n", return_code);
             exit(1);
         }
-        
+
     }
 
     for (i = 0; i < WRITERS; i++) {
@@ -104,7 +108,7 @@ int main(int argc, char** argv)
         pthread_join(reader_threads[i], &thread_return);
         bad_threads += *(int*)thread_return;
         free (thread_return);
-        
+
     }
 
     pthread_mutex_destroy(&max_mutex);
@@ -133,7 +137,7 @@ void* writer(void* threadid)
     int tid = *(int*)threadid;
     int *pi;
     free (threadid);
- 
+
     for (i = 0; i < WRITE_COUNT; i++) {
 
         writer_acquire(read_write_lock);
@@ -169,7 +173,7 @@ void* reader(void* threadid)
     int tid = *(int*)threadid;
     int *pi;
     free (threadid);
-    
+
     for (i = 0; i < READ_COUNT; i++) {
 
         reader_acquire(read_write_lock);

@@ -1,16 +1,17 @@
 /*************************************
  * Lab 3 Exercise 1
- * Name:
- * Student No:
- * Lab Group:
+ * Name: Jennifer Long
+ * Student No: E0446263
+ * Lab Group: 11
  *************************************/
 
 
 #include <pthread.h>
 
 typedef struct {
-  pthread_mutex_t mutex;
+  pthread_mutex_t rmutex;
+  pthread_mutex_t wmutex;
   pthread_mutex_t roomEmpty;
   int reader_count;
-  // int writer_count;
+  int writer_count;
 } rw_lock;

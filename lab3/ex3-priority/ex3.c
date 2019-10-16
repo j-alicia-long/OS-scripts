@@ -17,6 +17,7 @@ extern int num_of_cars;
 extern int num_of_segments;
 sem_t roundabout_max_cars_mutex; 
 sem_t* segment_mutex;
+//sem_t* segment_entry_mutex;
 
 void initialise()
 {
@@ -28,6 +29,12 @@ void initialise()
     for (int i = 0; i < num_of_segments; i++) {
         sem_init(&segment_mutex[i], 0, 1);
     }
+
+//    // prioritize roundabout movement over entry
+//    segment_entry_mutex = malloc (sizeof (sem_t) * num_of_segments);
+//    for (int i = 0; i < num_of_segments; i++) {
+//        sem_init(&segment_entry_mutex[i], 0, 1);
+//    }
 }
 
 void cleanup()
@@ -36,6 +43,7 @@ void cleanup()
 
     for (int i = 0; i < num_of_segments; i++) {
         sem_destroy(&segment_mutex[i]);
+//        sem_destroy(&segment_entry_mutex[i]);
     }
 }
 
@@ -46,6 +54,8 @@ void* car(void* car) //Why is this void?
     // Enter roundabout if segment is free
     sem_wait(&roundabout_max_cars_mutex);
     sem_wait(&segment_mutex[c->entry_seg]);
+//    sem_wait(&segment_entry_mutex[PREV(c->entry_seg, num_of_segments)]);
+//    sem_post(&segment_entry_mutex[PREV(c->entry_seg, num_of_segments)]);
     enter_roundabout(c);
 
     // While not at end segment

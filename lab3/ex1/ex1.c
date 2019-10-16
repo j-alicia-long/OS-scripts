@@ -33,21 +33,25 @@ void writer_release(rw_lock* lock)
 void reader_acquire(rw_lock* lock)
 {
   pthread_mutex_lock(&(lock->rmutex));
-  lock->reader_count++;
-  pthread_mutex_unlock(&(lock->rmutex));
 
-  if(lock->reader_count == 1)
-    pthread_mutex_lock(&(lock->roomEmpty));  
+  if(lock->reader_count == 0)
+    pthread_mutex_lock(&(lock->roomEmpty));
+
+  lock->reader_count++;
+
+  pthread_mutex_unlock(&(lock->rmutex));
 }
 
 void reader_release(rw_lock* lock)
 {
   pthread_mutex_lock(&(lock->rmutex));
+
   lock->reader_count--;
-  pthread_mutex_unlock(&(lock->rmutex));
 
   if(lock->reader_count == 0)
     pthread_mutex_unlock(&(lock->roomEmpty));
+
+  pthread_mutex_unlock(&(lock->rmutex));  
 }
 
 void cleanup(rw_lock* lock)

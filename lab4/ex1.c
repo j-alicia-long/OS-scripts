@@ -58,18 +58,19 @@ void os_run(int initial_num_pages, page_table *pg_table){
 */
 
 	// Choose frame for replacement page	
+	int victim_page;
 	while(1){
 	    // if frame empty or not referenced, replace it
-	    int page = frame_to_page[next_victim_frame];
-	    if (page == -1) // empty
+	    victim_page = frame_to_page[next_victim_frame];
+	    if (victim_page == -1) // empty
 	        break;
-	    if (pg_table->entries[page].valid == 0 || pg_table->entries[page].referenced == 0){
-		pg_table->entries[page].valid = 0;
+	    if (pg_table->entries[victim_page].referenced == 0){
+		pg_table->entries[victim_page].valid = 0;
 	        break;
 	    }
 	    // else check next frame in queue
 	    else{
-		pg_table->entries[page].referenced = 0;
+		pg_table->entries[victim_page].referenced = 0;
 		next_victim_frame = (next_victim_frame+1) % (1<<FRAME_BITS);
 	    }		
 	}

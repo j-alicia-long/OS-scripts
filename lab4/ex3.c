@@ -1,17 +1,14 @@
 /*************************************
- * Lab 4 Exercise 1
+ * Lab 4 Exercise 3
  * Name: 	Jennifer Long
  * Student No: 	E0446263
  * Lab Group: 	11
  *************************************/
 
-// You can modify anything in this file. 
-// Unless otherwise stated, a line of code being present in this template 
-//  does not imply that it is correct/necessary! 
-// You can also add any global or local variables you need (e.g. to implement your page replacement algorithm).
+// Goal: Allow user process to alloc/de-alloc memory
 
-// Compile:	gcc ex1.c runner.c -o ex -pthread
-// Run:		./ex < ex_sample.in
+// Compile:	gcc ex3.c runner.c -o ex3 -pthread
+// Run:		./ex3 < ex3_sample1.in
 
 #include <signal.h>
 #include <stdio.h>
@@ -23,6 +20,7 @@ void os_run(int initial_num_pages, page_table *pg_table){
     sigset_t signals;
     sigemptyset(&signals);
     sigaddset(&signals, SIGUSR1);
+    sigaddset(&signals, SIGUSR2);
     
     // create the pages in the disk first, because every page must be backed by the disk for this lab
     for (int i=0; i!=initial_num_pages; ++i) {
@@ -43,56 +41,77 @@ void os_run(int initial_num_pages, page_table *pg_table){
         sigwaitinfo(&signals, &info); // If signal received, page fault has occurred
         
         // retrieve the index of the page that the user program wants, or -1 if the user program has terminated
-        int const requested_page = info.si_value.sival_int;
-        
-        if (requested_page == -1) break; //quit signal
-	// Validate page index
-	if (requested_page < 0 || requested_page >= initial_num_pages){
-	// If out-of-range, raise a segfault
-	    union sigval reply_value;
-            reply_value.sival_int = 1;
-            sigqueue(info.si_pid, SIGCONT, reply_value);
-	    continue;
-	}	
+	int const signal_type = info.si_signo;
 
-        
-        // process the signal, and update the page table as necessary
+	if (signal_type == SIGUSR1) {
+	    //printf("SIGUSR1 Signal found");
 
-	// Choose frame for replacement page
-	int victim_page;
-	while(1){
-	    // if frame empty or not referenced, replace it
-	    victim_page = frame_to_page[next_victim_frame];
-	    if (victim_page == -1) // empty
-	        break;
-	    if (pg_table->entries[victim_page].referenced == 0){
-		pg_table->entries[victim_page].valid = 0;
-	        break;
+            int const requested_page = info.si_value.sival_int;
+        
+            if (requested_page == -1) break; //quit signal
+	    // Validate page index
+	    if (requested_page < 0 || requested_page >= initial_num_pages){
+	    // If out-of-range, raise a segfault
+	        union sigval reply_value;
+                reply_value.sival_int = 1;
+                sigqueue(info.si_pid, SIGCONT, reply_value);
+	        continue;
+	    }	
+
+            // process the signal, and update the page table as necessary
+
+	    // Choose frame for replacement page
+	    int victim_page;
+	    while(1){
+	        // if frame empty or not referenced, replace it
+    		victim_page = frame_to_page[next_victim_frame];
+	        if (victim_page == -1) // empty
+	            break;
+	        if (pg_table->entries[victim_page].referenced == 0){
+	            pg_table->entries[victim_page].valid = 0;
+	            break;
+	        }
+	        // else check next frame in queue
+	        else{
+		    pg_table->entries[victim_page].referenced = 0;
+		    next_victim_frame = (next_victim_frame+1) % (1<<FRAME_BITS);
+	        }		
 	    }
-	    // else check next frame in queue
+	    // Write old page to disk if dirty
+	    if (pg_table->entries[victim_page].dirty){
+	        disk_write(next_victim_frame, victim_page);
+	        pg_table->entries[victim_page].dirty = 0;
+	    }
+
+	    // Read in new page from disk to victim frame
+	    disk_read(next_victim_frame, requested_page);
+	    frame_to_page[next_victim_frame] = requested_page;
+
+	    // Update page table
+            pg_table->entries[requested_page].valid = 1;
+	    pg_table->entries[requested_page].frame_index = next_victim_frame;
+
+	    // Set next victim to next frame in queue
+	    next_victim_frame = (next_victim_frame+1) % (1<<FRAME_BITS);
+
+	}
+	else if (signal_type == SIGUSR2){
+	    printf("SIGUSR2 Signal found\n");
+
+	    int const requested_page = info.si_value.sival_int;
+	    printf("Requested page: %d\n", requested_page);
+	    if (requested_page == -1){
+		printf("mmap requested\n");
+		// Call disk_create to create new page on disk
+	    }
 	    else{
-		pg_table->entries[victim_page].referenced = 0;
-		next_victim_frame = (next_victim_frame+1) % (1<<FRAME_BITS);
-	    }		
+		printf("munmap requested\n");
+		// Check if delete memory requested is not allocated
+		// 	if not, just ignore
+		// Call disk_delete to delete page on disk
+	    }
+
 	}
-	// Write old page to disk if dirty
-	if (pg_table->entries[victim_page].dirty){
-	    disk_write(next_victim_frame, victim_page);
-	    pg_table->entries[victim_page].dirty = 0;
-	}
-
-	// Read in new page from disk to victim frame
-	disk_read(next_victim_frame, requested_page);
-	frame_to_page[next_victim_frame] = requested_page;
-
-	// Update page table
-        pg_table->entries[requested_page].valid = 1;
-	pg_table->entries[requested_page].frame_index = next_victim_frame;
-
-	// Set next victim to next frame in queue
-	next_victim_frame = (next_victim_frame+1) % (1<<FRAME_BITS);
-
-
 
 
         // tell the MMU that we are done updating the page table

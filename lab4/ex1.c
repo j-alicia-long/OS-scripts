@@ -5,13 +5,10 @@
  * Lab Group: 	11
  *************************************/
 
-// You can modify anything in this file. 
-// Unless otherwise stated, a line of code being present in this template 
-//  does not imply that it is correct/necessary! 
-// You can also add any global or local variables you need (e.g. to implement your page replacement algorithm).
+// Goal: Manage read-only memory
 
-// Compile:	gcc ex1.c runner.c -o ex -pthread
-// Run:		./ex < ex_sample.in
+// Compile:	gcc ex1.c runner.c -o ex1 -pthread
+// Run:		./ex1 < ex1_sample1.in
 
 #include <signal.h>
 #include <stdio.h>

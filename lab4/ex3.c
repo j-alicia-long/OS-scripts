@@ -23,12 +23,15 @@ void os_run(int initial_num_pages, page_table *pg_table){
     sigaddset(&signals, SIGUSR2);
     
     // create the pages in the disk first, because every page must be backed by the disk for this lab
+    int is_page_allocated[(1<<PAGE_BITS)];
+
     for (int i=0; i!=initial_num_pages; ++i) {
         disk_create(i);
+	is_page_allocated[i] = 1;
     }
     
 
-    // Mapping of frame index to page index
+    // Inverted page table: Mapping of frame index to page index
     int frame_to_page[1<<FRAME_BITS];
     for (int i=0; i!=(1<<FRAME_BITS); ++i) {
         frame_to_page[i] = -1;
@@ -39,21 +42,20 @@ void os_run(int initial_num_pages, page_table *pg_table){
     while (1) {
         siginfo_t info; // What is this?
         sigwaitinfo(&signals, &info); // If signal received, page fault has occurred
-        
-        // retrieve the index of the page that the user program wants, or -1 if the user program has terminated
-	int const signal_type = info.si_signo;
 
-	if (signal_type == SIGUSR1) {
-	    //printf("SIGUSR1 Signal found");
 
+	if (info.si_signo == SIGUSR1) {
+
+	    // retrieve the index of the page that the user program wants
             int const requested_page = info.si_value.sival_int;
         
             if (requested_page == -1) break; //quit signal
-	    // Validate page index
-	    if (requested_page < 0 || requested_page >= initial_num_pages){
-	    // If out-of-range, raise a segfault
+	    
+	    // If page not allocated, raise a segfault
+	    if (is_page_allocated[requested_page] == 0) {
+		printf("Requested page %d is not allocated\n", requested_page);
 	        union sigval reply_value;
-                reply_value.sival_int = 1;
+                reply_value.sival_int = 1; // set to 1 if the page is not mapped to the user process (i.e. segfault)
                 sigqueue(info.si_pid, SIGCONT, reply_value);
 	        continue;
 	    }	
@@ -95,28 +97,55 @@ void os_run(int initial_num_pages, page_table *pg_table){
 	    next_victim_frame = (next_victim_frame+1) % (1<<FRAME_BITS);
 
 	}
-	else if (signal_type == SIGUSR2){
-	    printf("SIGUSR2 Signal found\n");
+	else if (info.si_signo == SIGUSR2){
 
 	    int const requested_page = info.si_value.sival_int;
-	    printf("Requested page: %d\n", requested_page);
-	    if (requested_page == -1){
-		printf("mmap requested\n");
-		// Call disk_create to create new page on disk
-	    }
-	    else{
-		printf("munmap requested\n");
-		// Check if delete memory requested is not allocated
-		// 	if not, just ignore
-		// Call disk_delete to delete page on disk
-	    }
 
+	    // MMAP
+	    if (requested_page == -1) {
+		// Choose available page for mapping
+    	        int available_page;
+	        int next_page_number = initial_num_pages; 
+		for (int p=0; p<(1<<PAGE_BITS); p++) {
+	            // Find unmapped page (invalid)
+	            if (is_page_allocated[p] == 0){
+			available_page = p;
+	                break;
+	            }
+	        }
+
+		// Call disk_create to create new page on disk
+		disk_create(available_page);
+		is_page_allocated[available_page] = 1;
+
+		// Return chosen page to MMU
+		union sigval reply_value;
+		reply_value.sival_int = available_page; // set to new page 
+		sigqueue(info.si_pid, SIGCONT, reply_value);
+		continue;		
+	    }
+	    // MUNMAP
+	    else {
+		// retrieve the index of the page that the user program wants
+                int const requested_page = info.si_value.sival_int;
+
+		// Check if delete memory requested is within range
+		if (requested_page >= 0 && requested_page < (1<<PAGE_BITS)) {
+		    // Check if delete memory requested is actually allocated
+		    if (is_page_allocated[requested_page] == 1) {
+			// Call disk_delete to delete page on disk
+			pg_table->entries[requested_page].valid = 0;
+			is_page_allocated[requested_page] = 0;
+			disk_delete(requested_page);
+		    }		
+		}
+	    }
 	}
 
 
         // tell the MMU that we are done updating the page table
         union sigval reply_value;
-        reply_value.sival_int = 0; // set to 0 if the page is successfully loaded, set to 1 if the page is not mapped to the user process (i.e. segfault)
+        reply_value.sival_int = 0; // set to 0 if the page is successfully loaded, 
         sigqueue(info.si_pid, SIGCONT, reply_value);
     }
 }

@@ -10,6 +10,7 @@
 // Compile:	gcc ex1.c runner.c -o ex1 -pthread
 // Run:		./ex1 < ex1_sample1.in
 
+
 #include <signal.h>
 #include <stdio.h>
 
@@ -74,7 +75,7 @@ void os_run(int initial_num_pages, page_table *pg_table){
     		victim_page = frame_to_page[next_victim_frame];
 	        if (victim_page == -1) // empty
 	            break;
-	        if (pg_table->entries[victim_page].referenced == 0){
+	        if (pg_table->entries[requested_page].valid == 0 || pg_table->entries[victim_page].referenced == 0){
 	            pg_table->entries[victim_page].valid = 0;
 	            break;
 	        }

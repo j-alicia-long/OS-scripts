@@ -1,14 +1,14 @@
 /*************************************
- * Lab 4 Exercise 3
+ * Lab 4 Exercise 4
  * Name: 	Jennifer Long
  * Student No: 	E0446263
  * Lab Group: 	11
  *************************************/
 
-// Goal: Allow user process to alloc/de-alloc memory
+// Goal: Commit-on-write
 
-// Compile:	gcc ex3.c runner.c -o ex3 -pthread
-// Run:		./ex3 < ex3_sample1.in
+// Compile:	gcc ex4.c runner.c -o ex4 -pthread
+// Run:		./ex4 < ex4_sample1.in
 
 #include <signal.h>
 #include <stdio.h>
@@ -38,7 +38,8 @@ void os_run(int initial_num_pages, page_table *pg_table){
     }
     int next_victim_frame = 0; // next frame to be swapped out
 
-    
+	
+
     while (1) {
         siginfo_t info; // What is this?
         sigwaitinfo(&signals, &info); // If signal received, page fault has occurred
@@ -48,7 +49,15 @@ void os_run(int initial_num_pages, page_table *pg_table){
 	// retrieve the index of the page that the user program wants
         int const requested_page = info.si_value.sival_int;
 
+	printf("\nFrame pages before operation: ");
+	for (int i=0; i!=(1<<FRAME_BITS); ++i) {
+            printf("%d ", frame_to_page[i]);
+        }
+	printf("\n");
+
+
 	if (info.si_signo == SIGUSR1) {
+	    printf("***SIGUSR1 signal received\n");
 
 	    if (requested_page == -1) break; //quit signal
 	    
@@ -103,6 +112,7 @@ void os_run(int initial_num_pages, page_table *pg_table){
 
 	}
 	else if (info.si_signo == SIGUSR2){
+	    printf("***SIGUSR2 signal received\n");
 
 	    // MMAP
 	    if (requested_page == -1) {
@@ -133,6 +143,13 @@ void os_run(int initial_num_pages, page_table *pg_table){
 		}
 	    }
 	}
+
+
+	printf("Frame pages after operation: ");
+	for (int i=0; i!=(1<<FRAME_BITS); ++i) {
+            printf("%d ", frame_to_page[i]);
+        }
+	printf("\n\n");
 
 
         // tell the MMU that we are done updating the page table

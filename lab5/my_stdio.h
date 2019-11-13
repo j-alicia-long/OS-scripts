@@ -1,8 +1,8 @@
 /*************************************
  * Lab 5 my_stdio.h
- * Name:
- * Student No:
- * Lab Group:
+ * Name: 	Jennifer Long
+ * Student No: 	E0446263
+ * Lab Group: 	11
  *************************************
  Warning: Make sure your code works on
  lab machine (Linux on x86)
@@ -26,6 +26,15 @@
 typedef struct {
 	int fd;
 	// TODO: Define the members of your structure
+
+	// The buffer size (capacity) is 4096 bytes
+	char* buffer;
+	int index; // Should this be int or char ptr into buffer
+	int bufferEnd;
+
+	// Should I use a char pointer or char array? - Dynamic mem is better
+	// I shouldn't malloc buffer within struct, right - Yes
+	
 } MY_FILE; 
 
 MY_FILE *my_fopen(const char *pathname, const char *mode);

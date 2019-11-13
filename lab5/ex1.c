@@ -1,12 +1,13 @@
 /*************************************
  * Lab 5 Ex1
- * Name:
- * Student No:
- * Lab Group:
+ * Name: 	Jennifer Long
+ * Student No: 	E0446263
+ * Lab Group: 	11
  *************************************
  Warning: Make sure your code works on
  lab machine (Linux on x86)
  *************************************/
+
 
 #include "my_stdio.h"
 
@@ -64,11 +65,16 @@ MY_FILE *my_fopen(const char *pathname, const char *mode) {
 	f->fd = fd;
 	// TODO: Initialize the other members of your structure
 
+	f->buffer = malloc(sizeof(char)*4096);
+	f->index = 0;
+	f->bufferEnd = 0;
+
 	return f;
 }
 
 void free_file(MY_FILE *f) {
 	// TODO: free() members of your structure as needed
+	free(f->buffer);
 	free(f);
 }
 

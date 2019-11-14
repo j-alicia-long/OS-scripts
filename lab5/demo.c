@@ -61,6 +61,7 @@ int main(int argc, char **argv) {
     freadFromFile(who, file);
     my_fclose (file);
 
+    //Parent wait for child??
     
 }   
 void freadFromFile (char who[50], MY_FILE *file) {
@@ -71,7 +72,7 @@ void freadFromFile (char who[50], MY_FILE *file) {
 		usleep (1000);
 		charBuf = 0;
 		readBytes = my_fread( (void*) &charBuf, 1, 1, file);
-
+		//printf("Bytes read count: %d\n", readBytes);
 		if( readBytes != 1 ) {
 			return;
 		}

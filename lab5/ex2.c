@@ -12,26 +12,29 @@
 #include <stdio.h>
 
 size_t my_fread(void *ptr, size_t size, size_t nmemb, MY_FILE *stream) {
+
+	size_t totalBytesToRead = nmemb*size;
 	
-	int count = 0;
-	while (count < (nmemb*size)) {
-		// If at end of stream buffer		
+	int byteCount = 0;
+	while (byteCount < totalBytesToRead) {
+		// If at end of stream buffer, call read to refill buffer	
 		if (stream->index == stream->bufferEnd) {
-			// call read to refill buffer
-			int bytesRead = read(stream->fd, stream->buffer, 4096);
+			int bytesRead = read(stream->fd, stream->buffer, BUFFER_SIZE);
 			if (bytesRead <= 0) // EOF
 				break;
 			stream->index = 0; // reset buffer index
 			stream->bufferEnd = bytesRead;
 		}
 		// Copy buffer data to ptr
-		((char*)ptr)[count] = stream->buffer[stream->index];
+		((char*)ptr)[byteCount] = stream->buffer[stream->index];
 
 		// Increment index
-		count++;
+		byteCount++;
 		stream->index++;
-		printf("Bytes read count: %d\n", count);
+		//printf("Bytes read count: %d\n", byteCount);
 	}
 	
-	return count;
+	if (totalBytesToRead > 0 && byteCount == 0)
+		return MY_EOF;
+	return byteCount;
 }

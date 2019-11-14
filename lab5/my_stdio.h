@@ -22,6 +22,7 @@
 #include <string.h>
 
 #define MY_EOF (-1)
+#define BUFFER_SIZE (4096)
 
 typedef struct {
 	int fd;

@@ -65,7 +65,7 @@ MY_FILE *my_fopen(const char *pathname, const char *mode) {
 	f->fd = fd;
 	// TODO: Initialize the other members of your structure
 
-	f->buffer = malloc(sizeof(char)*4096);
+	f->buffer = malloc(sizeof(char)*BUFFER_SIZE);
 	f->index = 0;
 	f->bufferEnd = 0;
 
@@ -87,6 +87,8 @@ int my_fclose(MY_FILE *f) {
 	free_file(f);
 
 	ret2 = close(fd);
+
+	//printf("File has been closed\n");
 	
 	if (ret1 || (ret2 < 0))
 		return MY_EOF;

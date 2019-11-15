@@ -17,28 +17,31 @@ size_t my_fwrite(const void *ptr, size_t size, size_t nmemb, MY_FILE *stream) {
 	// Note: In a+ mode we need to shift the "seek" to the end of the file
 	
 	// Write the bytes
-	int byteCount = 0;
-	while (byteCount < totalBytesToWrite) {
+	int bytesWritten = 0;
+	while (bytesWritten < totalBytesToWrite) {
 		// If stream buffer is filled, call write to empty buffer		
-		if (stream->index == BUFFER_SIZE-1) {
-			int bytesWritten = write(stream->fd, stream->buffer, BUFFER_SIZE);
-			if (bytesWritten <= 0) // Error
+		if (stream->bufIndex == BUFFER_SIZE-1) {
+			int bytesCommitted = write(stream->fd, stream->buffer, BUFFER_SIZE);
+			if (bytesCommitted <= 0) // Error
 				break;
-			stream->index = 0; // reset buffer index
+			stream->bufIndex = 0; // reset buffer index
+			stream->fileIndex += bytesCommitted; // shifts file index
 		}
-		// Copy buffer data to ptr
-		stream->buffer[stream->index] = ((char*)ptr)[byteCount];
+		// Copy ptr data to buffer
+		//stream->buffer[stream->bufIndex] = ((char*)ptr)[bytesWritten];
+		memcpy(&(stream->buffer[stream->bufIndex]), &(ptr[bytesWritten]), size);
 
-		// Increment index
-		byteCount++;
-		stream->index++;
-		//printf("Bytes written count: %d\n", byteCount);
+		// Increment Index
+		bytesWritten += size;
+		stream->bufIndex += size;
 	}
 	
 	// Should we commit everything at the end?
 
-	if (totalBytesToWrite > 0 && byteCount == 0)
+	if (totalBytesToWrite > 0 && bytesWritten == 0)
 		return MY_EOF;
-	return byteCount;
+
+	// Return number of items written
+	return bytesWritten/size;
 
 }

@@ -9,39 +9,52 @@
  *************************************/
 
 #include "my_stdio.h"
-//#include <stdio.h>
+#include <stdio.h>
 
 size_t my_fread(void *ptr, size_t size, size_t nmemb, MY_FILE *stream) {
 
 	size_t totalBytesToRead = nmemb*size;
-	
-	int bytesRead = 0;
+	size_t copySize;
 
+	int bytesRead = 0;
 	while (bytesRead < totalBytesToRead) 
 	{
+		printf("Index into buffer: %d\n", stream->index);
+
 		// If at end of stream buffer, call read to refill buffer	
-		if (stream->bufIndex == stream->bufferEnd) {
+		if (stream->index == stream->bufferEnd) {
 			int bytesLoaded = read(stream->fd, stream->buffer, BUFFER_SIZE);
 			if (bytesLoaded <= 0) // EOF
 				break;
-			stream->bufIndex = 0; // reset buffer index
+			stream->index = 0; // reset buffer index
 			stream->bufferEnd = bytesLoaded;
-			stream->fileIndex += bytesLoaded;  // shifts file index
 		}
 
-		// Copy buffer data to ptr
-		memcpy(&(ptr[bytesRead]), &(stream->buffer[stream->bufIndex]), size);
-		//((char*)ptr)[bytesRead] = stream->buffer[stream->bufIndex];
+		// Find size of bytes to read
+		copySize = totalBytesToRead;
+		if (totalBytesToRead > stream->bufferEnd+1)
+			copySize = stream->bufferEnd+1;
+		printf("Copy size: %d\n", copySize);
 
-		// Increment Index
-		bytesRead += size;
-		stream->bufIndex += size;
-		//printf("Bytes read count: %d\n", byteCount);
+		printf("Ptr: %s\n", ptr);
+		printf("buffer: %s\n", stream->buffer);
+
+		// Copy buffer data to ptr
+		memcpy(ptr, stream->buffer[stream->index], copySize);
+
+		printf("Ptr: %s\n", ptr);
+		printf("buffer: %s\n", stream->buffer);
+
+		// Increment index
+		bytesRead += copySize;
+		stream->index += copySize;
+
+		printf("Bytes read count: %d\n", bytesRead);
+		printf("Bytes copied: %s\n", ptr);
 	}
 	
 	if (totalBytesToRead > 0 && bytesRead == 0)
 		return MY_EOF;
 
-	// Return number of items read
 	return bytesRead/size;
 }

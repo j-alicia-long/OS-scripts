@@ -66,7 +66,7 @@ MY_FILE *my_fopen(const char *pathname, const char *mode) {
 	// TODO: Initialize the other members of your structure
 
 	f->buffer = malloc(sizeof(char)*BUFFER_SIZE);
-	f->index = 0;
+	f->bufIndex = 0;
 	f->bufferEnd = 0;
 
 	return f;
@@ -74,8 +74,8 @@ MY_FILE *my_fopen(const char *pathname, const char *mode) {
 
 void free_file(MY_FILE *f) {
 	// TODO: free() members of your structure as needed
-	free(f->buffer);
-	free(f);
+	//free(f->buffer);
+	//free(f);
 }
 
 int my_fclose(MY_FILE *f) {

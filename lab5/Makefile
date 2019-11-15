@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -fPIC
+CFLAGS=-Wall -fPIC -g
 LDFLAGS = -L.
 LDLIBS = -lmy_stdio -ldl
 

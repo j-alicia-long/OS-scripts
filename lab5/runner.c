@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
 						}
 						else
 							printf("F: Could not read %d bytes from file %s\n", atoi(items), filename);
-						free(buf);
+						//free(buf);
 					}
 					else if (strcmp(command, "my_fwrite") == 0) {
 						buf = (char*)malloc(sizeof(char) * atoi(items));
@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
 							printf("S: %d bytes were written to file %s\n", ret, filename);
 						else
 							printf("F: Could not write %d bytes to file %s\n", atoi(items), filename);
-						free(buf);
+						//free(buf);
 					}
 				}
 			}

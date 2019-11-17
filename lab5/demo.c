@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     sprintf(who, "Parent [%d]", getpid());
     
     charBuf = 0;    
-    //readBytes = my_fread( (void*) &charBuf, 1, 1, file);
+    readBytes = my_fread( (void*) &charBuf, 1, 1, file);
 
 	if( readBytes != 1 ) {
 		return 1;

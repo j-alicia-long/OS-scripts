@@ -9,7 +9,6 @@
  *************************************/
 
 #include "my_stdio.h"
-//#include <stdio.h>
 
 size_t my_fread(void *ptr, size_t size, size_t nmemb, MY_FILE *stream) {
 
@@ -31,12 +30,10 @@ size_t my_fread(void *ptr, size_t size, size_t nmemb, MY_FILE *stream) {
 
 		// Copy buffer data to ptr
 		memcpy(&(ptr[bytesRead]), &(stream->buffer[stream->bufIndex]), size);
-		//((char*)ptr)[bytesRead] = stream->buffer[stream->bufIndex];
 
 		// Increment Index
 		bytesRead += size;
 		stream->bufIndex += size;
-		//printf("Bytes read count: %d\n", byteCount);
 	}
 	
 	if (totalBytesToRead > 0 && bytesRead == 0)

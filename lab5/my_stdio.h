@@ -30,13 +30,13 @@ typedef struct {
 
 	// The buffer size (capacity) is 4096 bytes
 	char* buffer;
-	// Should I use a char pointer or char array? - Dynamic mem is better
-	// I shouldn't malloc buffer within struct, right - Yes
+	unsigned int mode;
 
 	int bufIndex; // Marks current index in buffer (read or write)
 	int bufferEnd; // Marks end of valid data (for fread)
 	
 	int fileIndex; // Marks current index into file
+
 
 	// Consider adding flags for lastRead/lastWrite
 	

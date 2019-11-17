@@ -68,14 +68,15 @@ MY_FILE *my_fopen(const char *pathname, const char *mode) {
 	f->buffer = malloc(sizeof(char)*BUFFER_SIZE);
 	f->bufIndex = 0;
 	f->bufferEnd = 0;
+	f->mode = open_flags;
 
 	return f;
 }
 
 void free_file(MY_FILE *f) {
 	// TODO: free() members of your structure as needed
-	//free(f->buffer);
-	//free(f);
+	free(f->buffer);
+	free(f);
 }
 
 int my_fclose(MY_FILE *f) {
@@ -87,8 +88,6 @@ int my_fclose(MY_FILE *f) {
 	free_file(f);
 
 	ret2 = close(fd);
-
-	//printf("File has been closed\n");
 	
 	if (ret1 || (ret2 < 0))
 		return MY_EOF;

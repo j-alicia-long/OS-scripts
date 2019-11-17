@@ -15,6 +15,7 @@ size_t my_fwrite(const void *ptr, size_t size, size_t nmemb, MY_FILE *stream) {
 	size_t totalBytesToWrite = nmemb*size;
 
 	// Note: In a+ mode we need to shift the "seek" to the end of the file
+	// This is handled by the OS in the write syscall based on open flags, I think
 	
 	// Write the bytes
 	int bytesWritten = 0;
@@ -28,7 +29,6 @@ size_t my_fwrite(const void *ptr, size_t size, size_t nmemb, MY_FILE *stream) {
 			stream->fileIndex += bytesCommitted; // shifts file index
 		}
 		// Copy ptr data to buffer
-		//stream->buffer[stream->bufIndex] = ((char*)ptr)[bytesWritten];
 		memcpy(&(stream->buffer[stream->bufIndex]), &(ptr[bytesWritten]), size);
 
 		// Increment Index
@@ -36,7 +36,12 @@ size_t my_fwrite(const void *ptr, size_t size, size_t nmemb, MY_FILE *stream) {
 		stream->bufIndex += size;
 	}
 	
-	// Should we commit everything at the end?
+	// Commit remainder in buffer?
+	int bytesCommitted = write(stream->fd, stream->buffer, stream->bufIndex);
+	if (bytesCommitted <= 0) // Error
+		return MY_EOF;
+	stream->bufIndex = 0; // reset buffer index
+	stream->fileIndex += bytesCommitted; // shifts file index
 
 	if (totalBytesToWrite > 0 && bytesWritten == 0)
 		return MY_EOF;
